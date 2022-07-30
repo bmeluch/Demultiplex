@@ -1,0 +1,14 @@
+#!/bin/bash
+#SBATCH --account=bgmp
+#SBATCH --partition=bgmp
+#SBATCH --job-name=n_count
+#SBATCH --cpus-per-task=4
+#SBATCH --nodes=1
+#SBATCH --output=n_count_%j.out
+#SBATCH --error=n_count_%j.err
+
+/usr/bin/time -v zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz | \
+grep -A 1 "^@" | grep -v "^@" | grep -c "N"
+
+/usr/bin/time -v zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz | \
+grep -A 1 "^@" | grep -v "^@" | grep -c "N"

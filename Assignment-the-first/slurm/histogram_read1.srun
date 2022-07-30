@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH --account=bgmp
+#SBATCH --partition=bgmp
+#SBATCH --job-name=dist_hist1
+#SBATCH --cpus-per-task=4
+#SBATCH --nodes=1
+#SBATCH --output=dist_hist1_%j.out
+#SBATCH --error=dist_hist1_%j.err
+
+/usr/bin/time -v /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-first/base_distribution.py \
+-f /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz \
+-o /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-first/histograms/read1.png

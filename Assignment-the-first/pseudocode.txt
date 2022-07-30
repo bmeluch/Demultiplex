@@ -1,0 +1,163 @@
+DEMULTIPLEXING
+
+############################## GOAL ##############################
+
+Separate records from FASTQ output files by matched/unmatched/unknown indices and save them to demultiplexed output files.
+
+############################## INPUT ############################## 
+- 4 FASTQ files from an Illumina paired-end sequencing run (read1, index1, index2, read2).
+- List of 24 indices used during library prep.
+
+############################## OUTPUT ##############################
+
+- 24 FASTQ files containing read1 records for which index1 and index2 sequences matched and are in the list of known indices ("matched reads")
+- 24 FASTQ files containing read2 records for which index1 and index2 sequences matched and are in the list of known indices ("matched reads")
+- 1 FASTQ file containing read1 records for which index 1 and index2 sequences were in the list of known indices but did not match each other ("index hopped reads")
+- 1 FASTQ file containing read2 records for which index 1 and index2 sequences were in the list of known indices but did not match each other ("index hopped reads")
+- 1 FASTQ file containing read1 records for which one or both indices were not in the list of known indices, contained an N (unknown base), or had an average quality score below 30 ("unknown reads")
+- 1 FASTQ file containing read2 records for which one or both indices were not in the list of known indices, contained an N (unknown base), or had an average quality score below 30 ("unknown reads")
+- Counts of:
+---- Number of matched read-pairs (24 pairs)
+---- Number of index-hopped read pairs (# of counts dependent on what mismatches are found)
+---- Number of unknown read pairs (1 count)
+
+############################## UNIT TESTS ##############################
+
+- Test inputs saved in /TEST-input_FASTQ/
+- Test outputs saved in /TEST-output_FASTQ/
+
+############################## ALGORITHM ##############################
+
+Variables
+
+    Read file with list of known indices, save 24 index sequences into a set
+
+    4x strings holding absolute paths to input FASTQ
+
+    holder variables for records:
+        read1_header (string, hold header line, append indices to header line)
+        read1_record (string append three lines, then blank after writing)
+        read2_header (string, hold header line, append indices to header line)
+        read2_record (string append three lines, then blank after writing)
+        index1_seq (string, strip newlines)
+        index1_qual (string, strip newlines)
+        index2_seq (string, strip newlines)
+        index2_qual (string, strip newlines)
+    
+    lcount: line count
+    matchcount: number of matched records
+    unkcount: number of records with unknown barcodes
+    qualcount: number of records with failing quality scores
+    empty dict to hold and count hopped pairs as they are discovered
+
+Open four input files
+
+    Read lines in files simultaneously
+
+        Increment line count
+
+        Three conditionals should be linked using elif:
+        1. When we hit a new record (line starts with @) and we're past the first record (line count > 4) and line count%4=1:
+
+            Using the current values of record holder variables:
+
+            Three following questions should be linked using elif:
+            1. Are both indices known? (compare to set of indices, inherently checks for N)
+                yes
+                    continue to next question
+                no
+                    output record to unknown read1/read2 files
+                        write out read1_header/read2_header lines with indices appended
+                        write out read1_record/read2_record
+                    increment unknown count
+
+            2. Are they high enough quality? (use qual_score)
+                yes
+                    continue to next question
+                no
+                    output record to unknown read1/read2 files
+                        write out read1_header/read2_header lines with indices appended
+                        write out read1_record/read2_record
+                    increment qual fail count
+
+            3. Do they match?
+                yes
+                    output to matched read1/read2 files with "index1_seq-index2_seq" in name
+                        write out read1_header/read2_header lines with indices appended
+                        write out read1_record/read2_record
+                    increment matched count
+                no
+                    output to read1/read2 index hopped files
+                        write out read1_header/read2_header lines with indices appended
+                        write out read1_record/read2_record
+
+                    is this hopped pairing counted already?
+                        yes
+                            increment count in index hopped count dict
+                        no
+                            add pairing to index hopped count dict with a value of 1
+            
+            Save current header lines to read1_header and read2_header
+
+        2. Header line of first record (line count == 1)
+            Save current header lines to read1_header and read2_header
+
+        3. If this isn't a header line
+            Append to read1_record and read2_record
+            If sequence line
+                Write over index1_seq with seq line from file
+                Write over index2_seq with rev comp seq line from file
+            If quality line
+                Write over index1_qual/index2_qual with new data
+
+Repeat above logic once more to write out last record to correct file, since the last record will be in holders but won't trigger output logic because there's no next header line
+
+Close any files if they haven't already been closed
+
+Write counts to output text file
+
+    Matched total count (matchcount)
+        should equal total records in matched r1 files
+        should equal total records in matched r2 files
+        include breakdown of matched record counts for each of 24 indices
+
+    Unknown total count
+        should equal unkcount + qualcount
+        should equal total records in r1 unknown file
+        should equal total records in r2 unknown file
+
+    Index hopped total count
+        should equal number of records in index hopped r1 file
+        should equal number of records in index hopped r2 file
+        should equal sum of values in index hopped count dictionary
+        include breakdown of counts for each identified wrong index pair
+
+    Total number of records in all output files
+        should equal total number of records in input files
+        should equal lcount / 4
+
+############################## FUNCTIONS ##############################
+
+qual_score(quality: string)
+"""Takes a Phred score string and returns the average quality score of the string as a float."""
+return avg_score
+
+Test
+    Input: "12345"
+    Output: 51.
+
+write_demux_fastq(header: string, record: string, index1: string, index2: string, read: int, case: int)
+"""Takes record information, index sequences, and case (0: matched, 1: unknown, 2: hopped) and writes record to the correct demultiplexed FASTQ file."""
+pass
+
+Test
+    Input: ("@header_info", "sequence\n+\nquality\n", "ATAGC", "ATAGC", 1, 0)
+    Output: Function returns nothing. Record is written to output file "Read1_Matched_ATAGC-ATAGC.fastq"
+
+rev_comp(seq: string)
+"""Given a nucleotide string, returns the reverse complemented string."""
+return rc_seq
+
+Test
+    Input: "GATTACA"
+    Output: "TGTAATC"

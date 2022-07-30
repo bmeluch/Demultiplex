@@ -1,0 +1,22 @@
+#!/bin/bash
+#SBATCH --account=bgmp
+#SBATCH --partition=bgmp
+#SBATCH --job-name=dist_hist2-4
+#SBATCH --cpus-per-task=4
+#SBATCH --nodes=1
+#SBATCH --output=dist_hist2-4_%j.out
+#SBATCH --error=dist_hist2-4_%j.err
+
+conda activate bgmp_py310
+
+/usr/bin/time -v /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-first/base_distribution.py \
+-f /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz \
+-o /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-first/histograms/index1.png
+
+/usr/bin/time -v /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-first/base_distribution.py \
+-f /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz \
+-o /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-first/histograms/index2.png
+
+/usr/bin/time -v /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-first/base_distribution.py \
+-f /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz \
+-o /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-first/histograms/read2.png
