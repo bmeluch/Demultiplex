@@ -1,0 +1,5 @@
+*.err
+*.out
+__pycache__/
+test.fastq
+test.png
