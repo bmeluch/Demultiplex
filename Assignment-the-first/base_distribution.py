@@ -35,7 +35,7 @@ with gzip.open(fname, 'rt') as fq:
 
 # create empty lists equal to sequence length
 qscores: list = [0]*seqlen
-mean: list = [0]*seqlen
+mean: list = [0.0]*seqlen
 
 # reset line counter
 lcount = 0

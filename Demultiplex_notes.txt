@@ -134,3 +134,48 @@ Index 1: 3976613
 Index 2: 3328051
 
 Finishing answers, submitting to github.
+
+############################## 02 Aug 2022
+
+Starting to write demux script for real, now that I have peer review feedback
+
+Cloned git repository to local computer so while I work with unit tests I don't have to be connected to Talapas, but now Pylance is showing errors in base_distribution.py. And while technically that part of the assignment is done, I still wish it would not!
+Matplotlib is definitely installed in my base environment on my computer.
+
+Line 58
+    mean[position] = qscores[position]/(lcount/4)
+
+(variable) position: int
+Argument of type "int" cannot be assigned to parameter "__s" of type "slice" in function "__setitem__"
+  "int" is incompatible with "slice"PylancereportGeneralTypeIssues
+Argument of type "float" cannot be assigned to parameter "__o" of type "Iterable[int]" in function "__setitem__"
+  "float" is incompatible with protocol "Iterable[int]"
+    "__iter__" is not presentPylancereportGeneralTypeIssues
+
+WHY, PYLANCE. THIS RAN JUST FINE.
+
+okay I figured it out. List mean[] was filled with integer 0, not float 0, so when I passed it a float it gave a type error. Changed the list initiation to fill it with 0.0. Committed change.
+
+
+Base environment has python 3.10.4, so when I move it to Talapas to do the actual analysis it will be running the same 3.10 at least.
+(base) bmeluch@LAPTOP-M108AT0U:~/bioinfo/Bi622$ which python
+/home/bmeluch/miniconda3/bin/python
+(base) bmeluch@LAPTOP-M108AT0U:~/bioinfo/Bi622$ python --version
+Python 3.10.4
+
+Python interpreter set to base environment, which fixed Pylance not recognizing modules, and which I should have thought of first.
+I think I'm ready to start writing now!
+
+############################## 09 Aug 2022
+
+Continuing work on demultiplex.py
+
+- learned about itertools islice to grab 4 lines at a time
+
+############################## 10 Aug 2022
+
+Script is set up to output counts as data files so I can write a separate plotting script and fiddle around with it more easily
+
+Fiddle with unit tests to test out index N replacement
+
+Transfer to Talapas

@@ -1,0 +1,6 @@
+Total reads with matched indices:	1
+Total reads with hopped indices:	1
+Total reads with unknown indices:	2
+	Total reads with unrecognized indices:	1
+	Total reads with quality failed indices:	1
+Total reads written to files:	4
