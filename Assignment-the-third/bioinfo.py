@@ -8,13 +8,15 @@
 
 '''This module is a collection of useful bioinformatics functions
 written during the Bioinformatics and Genomics Program coursework.
-Updated 17 Jul 2022 for end of class'''
+Updated 02 Aug 2022 for Demux assignment.'''
 
-__version__ = "0.5"         # Read way more about versioning here:
+__version__ = "0.6"         # Read way more about versioning here:
                             # https://en.wikipedia.org/wiki/Software_versioning
 
 DNA_bases = set('ATGCNatgcn')
 RNA_bases = set('AUGCNaugcn')
+DNA_pairing: dict = {'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G', 'N': 'N'}
+RNA_pairing: dict = {'A': 'U', 'U': 'A', 'G': 'C', 'C': 'G', 'N': 'N'}
 
 def convert_phred(letter: str) -> int:
     """Converts a single character into a Phred+33 score"""
@@ -33,6 +35,13 @@ def qual_score(phred_score: str) -> float:
         total_score += convert_phred(phred_score[ch])
     # calculate the average
     return total_score/len(phred_score)
+
+def qual_pass(seq: str, cutoff: int) -> bool:
+    """Takes a Phred score string and returns True if all bases pass a quality threshold, False if any single base does not pass"""
+    for base in seq:
+        if convert_phred(base) < cutoff:
+            return False
+    return True
 
 def validate_base_seq(seq: str,RNAflag=False) -> bool:
     '''This function takes a string. Returns True if string is composed
@@ -88,6 +97,17 @@ def oneline_fasta(input_file: str, output_file: str):
 
     return(output_file+" completed")
 
+def reverse_complement(seq: str, RNAflag=False) -> str:
+    '''Takes a string, if the string is a valid base sequence, returns the reverse complement. DNA or RNA, case insensitive.'''
+    seq = seq.upper()
+    rev_comp: str = ""
+    if not validate_base_seq(seq):
+        raise ValueError("Input is not a valid base sequence.")
+    for base in seq:
+        rev_comp += DNA_pairing[base]
+    rev_comp = rev_comp[::-1]
+    return rev_comp
+
 if __name__ == "__main__":
     # write tests for functions above
 
@@ -114,3 +134,8 @@ if __name__ == "__main__":
     #test gc_content
     assert gc_content("ATGATCACGACTGCTACGACTACGACTACG") == 0.5, "wrong GC content"
     print("Correct GC content")
+
+    # test reverse complement
+    assert reverse_complement("GATTACA") == "TGTAATC", "wrong rev comp"
+    assert reverse_complement("augc") == "GCAU", "wrong rev comp"
+    print("Correct reverse complementing")
