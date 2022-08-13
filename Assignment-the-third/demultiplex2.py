@@ -25,7 +25,7 @@ parser.add_argument("-r1", help="R1 FASTQ file (read1)", required=True)
 parser.add_argument("-r2", help="R2 FASTQ file (index1)", required=True)
 parser.add_argument("-r3", help="R3 FASTQ file (index2)", required=True)
 parser.add_argument("-r4", help="R4 FASTQ file (read2)", required=True)
-parser.add_argument("-id", help="File containing index sequences (5 columns)")
+parser.add_argument("-id", help="File containing index sequences (5 columns)", required=True)
 parser.add_argument("-o", help="Output folder path and name, INCLUDE /", required=True)
 args = parser.parse_args()
 read1_fname: str = args.r1
@@ -35,13 +35,13 @@ read2_fname: str = args.r4
 index_fname: str = args.id
 out_fold: str = args.o
 
-# local test files
-# read1_fname = "/home/bmeluch/bioinfo/Bi622/Demultiplex/TEST-input_FASTQ/unit-test_read1_R1.fastq.gz"
-# index1_fname = "/home/bmeluch/bioinfo/Bi622/Demultiplex/TEST-input_FASTQ/unit-test_index1_R2.fastq.gz"
-# index2_fname = "/home/bmeluch/bioinfo/Bi622/Demultiplex/TEST-input_FASTQ/unit-test_index2_R3.fastq.gz"
-# read2_fname = "/home/bmeluch/bioinfo/Bi622/Demultiplex/TEST-input_FASTQ/unit-test_read2_R4.fastq.gz"
-# index_fname = "/home/bmeluch/bioinfo/Bi622/Demultiplex/TEST-input_FASTQ/unit-test_known-index.txt"
-# out_fold = "/home/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/output/"
+# talapas test files
+# read1_fname = "/projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/TEST-input_FASTQ/unit-test_read1_R1.fastq.gz"
+# index1_fname = "/projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/TEST-input_FASTQ/unit-test_index1_R2.fastq.gz"
+# index2_fname = "/projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/TEST-input_FASTQ/unit-test_index2_R3.fastq.gz"
+# read2_fname = "/projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/TEST-input_FASTQ/unit-test_read2_R4.fastq.gz"
+# index_fname = "/projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/TEST-input_FASTQ/unit-test_known-index.txt"
+# out_fold = "/projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/output2/"
 
 
 ############################## IMPORT INDICES ##############################
@@ -124,23 +124,17 @@ with gzip.open(read1_fname, 'rt') as r1, gzip.open(index1_fname, 'rt') as i1, gz
         # reverse index2 quality line so the qual characters stay in line with the bases
         index2_record[3] = index2_record[3][::-1]
 
-        # optional - error correcting - if single n in index, correct with same character from other index
+        # error correcting - for first N in index, correct with same position from other index
         # bring over quality score as well
-        erri1 = 0
-        erri2 = 0
-        for b in range(len(index2_record[1])):
-            if index2_record[1][b] == "N":
-                erri2 += 1
-                if erri2 > 1:
-                    break
-                index2_record[1] = index2_record[1][:b]+index1_record[1][b]+index2_record[1][(b+1):]
-                index2_record[3] = index2_record[3][:b]+index1_record[3][b]+index2_record[3][(b+1):]
-            elif index1_record[1][b] == "N":
-                erri1 += 1
-                if erri1 > 1:
-                    break
-                index1_record[1] = index1_record[1][:b]+index2_record[1][b]+index1_record[1][(b+1):]
-                index1_record[3] = index1_record[3][:b]+index2_record[3][b]+index1_record[3][(b+1):]
+        # if "N" in index1_record[1]:
+        #     n1 = index1_record[1].find("N")
+        #     index1_record[1] = index1_record[1][:n1]+index2_record[1][n1]+index1_record[1][(n1+1):]
+        #     index1_record[3] = index1_record[3][:n1]+index2_record[3][n1]+index1_record[3][(n1+1):]
+
+        # if "N" in index2_record[1]:
+        #     n2 = index2_record[1].find("N")
+        #     index2_record[1] = index2_record[1][:n2]+index1_record[1][n2]+index2_record[1][(n2+1):]
+        #     index2_record[3] = index2_record[3][:n2]+index1_record[3][n2]+index2_record[3][(n2+1):]
 
         # append indices to headers
         read1_record[0] = read1_record[0]+"_"+index1_record[1]+"-"+index2_record[1]

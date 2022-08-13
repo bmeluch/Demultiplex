@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH --account=bgmp
+#SBATCH --partition=bgmp
+#SBATCH --job-name=demux
+#SBATCH --cpus-per-task=1
+#SBATCH --nodes=1
+#SBATCH --output=demux_%j.out
+#SBATCH --error=demux_%j.err
+#SBATCH --mail-type=END
+#SBATCH --mail-user=bmeluch@uoregon.edu
+
+conda activate bgmp_py310
+
+/usr/bin/time -v /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/demultiplex.py \
+-r1 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz \
+-r2 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz \
+-r3 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz \
+-r4 /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz \
+-id /projects/bgmp/shared/2017_sequencing/indexes.txt \
+-o /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/output/

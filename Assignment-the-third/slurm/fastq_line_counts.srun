@@ -1,0 +1,20 @@
+#!/bin/bash
+#SBATCH --account=bgmp
+#SBATCH --partition=bgmp
+#SBATCH --job-name=fastq_line_counts
+#SBATCH --cpus-per-task=4
+#SBATCH --nodes=1
+#SBATCH --output=fastq_line_counts_%j.out
+#SBATCH --error=fastq_line_counts_%j.err
+#SBATCH --mail-type=END
+#SBATCH --mail-user=bmeluch@uoregon.edu
+
+# cd to output folder
+#cd /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/output
+
+# count lines in R1 (read1) and R4 (read2) input files
+# /usr/bin/time -v echo "$(zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz | wc -l) 1294_S1_L008_R1_001.fastq.gz" >> FASTQ_Line_Counts.txt
+# /usr/bin/time -v echo "$(zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz | wc -l) 1294_S1_L008_R4_001.fastq.gz" >> FASTQ_Line_Counts.txt
+
+# count lines in output files
+/usr/bin/time -v /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/slurm/fastq_line_counts.bash

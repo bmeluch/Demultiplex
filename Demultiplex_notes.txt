@@ -156,7 +156,6 @@ WHY, PYLANCE. THIS RAN JUST FINE.
 
 okay I figured it out. List mean[] was filled with integer 0, not float 0, so when I passed it a float it gave a type error. Changed the list initiation to fill it with 0.0. Committed change.
 
-
 Base environment has python 3.10.4, so when I move it to Talapas to do the actual analysis it will be running the same 3.10 at least.
 (base) bmeluch@LAPTOP-M108AT0U:~/bioinfo/Bi622$ which python
 /home/bmeluch/miniconda3/bin/python
@@ -179,3 +178,149 @@ Script is set up to output counts as data files so I can write a separate plotti
 Fiddle with unit tests to test out index N replacement
 
 Transfer to Talapas
+
+Git threw a fit about my gitignores not being merged. but it looks like everything pulled properly.
+
+Running!
+/projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/slurm/demux.srun
+
+1st: failed, had AND instead of OR when testing for unknown indices
+2nd: cancelled, input the wrong output folder
+3rd: corrected output folder this BETTER WORK
+
+Slurm job 21960369 "demux"
+
+############################## 11 Aug 2022
+
+using 'du .' to check output directory sizes, squeue -A bgmp to check runtime
+
+Still running. almost 11 hours in and it has produced 29 gigs of output. (~44M per minute) -> will take like 18 hours
+Other people reported anywhere from 1 to 12 hours...
+
+demux2 job to see if I can speed it up
+	Tried to change error correction to use str.find() instead of for loop through string. 
+	38 minutes in, 1.4 gigs output (~35M per minute)
+	So that's even slower! and I'm definitely past the first 1000 or so reads that we know are low quality.
+	Cancelling job  21961553 "demux2"
+	Deleting partially completed output files in /output2/ folder
+
+Add an 'if N in string' before correction logic, let's see if it's faster
+reusing demultiplex2.py, demux2.srun
+	Submitted batch job 21962897
+	this is still slower than the original. 2.47 gigs at 64 minutes (~38M per minute)
+	Cancelling job 21962897
+	Deleting partially completed output files in /output2/ folder
+
+Let's just take out the error correction entirely...
+reusing demultiplex2.py, demux2.srun
+	Submitted batch job 21963372
+
+WELL, APPARENTLY 18 hours is a reasonable amount of time for writing to gzip files to take. so I'm going to cancel the other attempt and just wait for my first one.
+	scancel 21963372
+
+DEMUX RUN 1 COMPLETE
+	Assignment-the-third/slurm/demux_21960369.err
+	Assignment-the-third/slurm/demux_21960369.out
+Talapas email
+	"Slurm Job_id=21960369 Name=demux Ended, Run time 14:43:00, COMPLETED, ExitCode 0"
+	3:10 pm
+	Hooray!
+
+Working on processing output into nice plots.
+
+I want to get the line counts for all my input files and output files and make sure they add up properly
+fastq_line_counts.srun
+
+	/usr/bin/time -v /usr/bin/time -v zcat /projects/bgmp/shared/2017_sequencing/*.fastq.gz | wc -l >> \
+	/projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/output/FASTQ_Line_Counts.txt
+
+	/usr/bin/time -v zcat /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/output/*.fastq.gz | wc -l >> \
+	/projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/output/FASTQ_Line_Counts.txt
+
+############################## 11 Aug 2022
+
+That just output two sums of the lines in each directory.
+	/output/FASTQ_Line_Counts.txt
+	5811947760
+	2905973880
+
+	Command being timed: "zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz"
+	User time (seconds): 1568.07
+	System time (seconds): 66.64
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 27:18.95
+	Exit status: 0
+	Command being timed: "/usr/bin/time -v zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R2_001.fastq.gz /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R3_001.fastq.gz /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz"
+	User time (seconds): 1568.07
+	System time (seconds): 66.64
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 27:18.95
+	Exit status: 0
+	Command being timed: < it listed out all the filenames in the output directory and that's way too long>
+	User time (seconds): 1155.67
+	System time (seconds): 53.37
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 20:14.45
+	Exit status: 0
+
+The total in the input files is twice as many as the output files because I included the index fastqs, which were not written to demuxed files
+
+How do I get it to output to one line per file? In the terminal, zcat *.fastq.gz | wc -l outputs count and filename all nicely ordered together. Why isn't that what wrote to my output text file? 
+
+(lots of googling) maybe I need to use echo
+
+Trying again
+/slurm/fastq_line_counts.srun
+	# cd to output folder
+	cd /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/output
+
+	# count lines in R1 (read1) and R4 (read2) input files
+	/usr/bin/time -v echo "$(zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R1_001.fastq.gz | wc -l) 1294_S1_L008_R1_001.fastq.gz" >> FASTQ_Line_Counts.txt
+	/usr/bin/time -v echo "$(zcat /projects/bgmp/shared/2017_sequencing/1294_S1_L008_R4_001.fastq.gz | wc -l) 1294_S1_L008_R1_001.fastq.gz" >> FASTQ_Line_Counts.txt
+
+	# count lines in output files
+	/usr/bin/time -v \
+	for filename in ./*.fastq.gz; do
+		echo "$(zcat $filename | wc -l) $filename" >> FASTQ_Line_Counts.txt
+	done
+
+The first two worked but my for loop didn't
+	/projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/slurm/fastq_line_counts_21983585.err
+	/cm/local/apps/slurm/var/spool/job21983585/slurm_script: line 21: syntax error near unexpected token `do'
+	/cm/local/apps/slurm/var/spool/job21983585/slurm_script: line 21: `for filename in ./*.fastq.gz; do'
+
+Try again to fix the for loop. Pete says it probably doesn't recognize my file path so I have changed the syntax a little bit? based on more googling?
+	# count lines in output files
+	/usr/bin/time -v \
+	for filename in "$folder"/*.fastq.gz; do
+    	echo "$(zcat $filename | wc -l) $filename" >> FASTQ_Line_Counts.txt
+	done
+
+It failed immediately.
+	/cm/local/apps/slurm/var/spool/job21984456/slurm_script: line 13: folder: command not found
+	/cm/local/apps/slurm/var/spool/job21984456/slurm_script: line 22: syntax error near unexpected token `do'
+	/cm/local/apps/slurm/var/spool/job21984456/slurm_script: line 22: `for filename in "$folder"/*.fastq.gz; do'
+
+It works without usr/bin/time attached! So Pete thinks you probably can't time a for loop. He says to put it in a separate bash script and then time the bash script
+	fastq_line_counts.srun
+		/usr/bin/time -v /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/slurm/fastq_line_counts.bash
+	fastq_line_counts.bash
+		#!/bin/bash
+		cd /projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/output
+		for filename in ./*.fastq.gz; do
+    		echo "$(zcat $filename | wc -l) $filename" >> FASTQ_Line_Counts.txt
+		done
+
+IT'S RUNNING
+
+Demultiplex/Assignment-the-third/slurm/fastq_line_counts_21984557.err
+	Command being timed: "/projects/bgmp/bmeluch/bioinfo/Bi622/Demultiplex/Assignment-the-third/slurm/fastq_line_counts.bash"
+	User time (seconds): 1223.80
+	System time (seconds): 100.00
+	Percent of CPU this job got: 105%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 20:51.38
+	Exit status: 0
+
+Wrote Demultiplex/Assignment-the-third/demux_calcs.py to do some percentages math and plots. Wrote everything up in Summary.md. Uploading to github.
+
+HOORAY

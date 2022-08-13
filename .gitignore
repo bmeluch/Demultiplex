@@ -3,5 +3,4 @@
 __pycache__/
 test.fastq
 test.png
-=======
 /Assignment-the-third/output/*.fastq.gz

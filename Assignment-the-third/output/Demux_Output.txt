@@ -1,6 +1,6 @@
-Total reads with matched indices:	1
-Total reads with hopped indices:	1
-Total reads with unknown indices:	2
-	Total reads with unrecognized indices:	1
-	Total reads with quality failed indices:	1
-Total reads written to files:	4
+Total reads with matched indices:	268193924
+Total reads with hopped indices:	416466
+Total reads with unknown indices:	94636345
+	Total reads with unrecognized indices:	26964596
+	Total reads with quality failed indices:	67671749
+Total reads written to files:	363246735
