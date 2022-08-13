@@ -8,6 +8,8 @@
 * Counts for each index pair were output to ```Demultiplex/Assignment-the-third/output/Index_Counts.tsv```.
 
 * Plots and additional math were done by ```Demultiplex/Assignment-the-third/demux_calcs.py``` using ```Demux_Output.txt``` and ```Index_Counts.tsv```.
+
+* ```demultiplex2.py``` can be disregarded, I was trying out a different index correction method to see if it would be faster.
  
 ## Read counts by category
 
